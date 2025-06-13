@@ -1,14 +1,14 @@
 #include "qtype.h"
 #include "queue.h"
-#include <cstring> 
+#include <cstring>
 
+// nalloc/nfree/nclone 최소구현 (혹시 호출될 경우 대비)
 Node* nalloc(Item item) { return nullptr; }
 void nfree(Node* node) {}
 Node* nclone(Node* node) { return nullptr; }
 
 Queue* init(void) {
     Queue* q = new Queue();
-  
     Node* sentinel = new Node{ {-1, nullptr, 0}, nullptr };
     q->head = sentinel;
     q->tail = sentinel;
@@ -23,19 +23,16 @@ void release(Queue* queue) {
         Node* temp = curr;
         curr = curr->next;
         if (temp->item.value) {
-            delete[] static_cast<char*>(temp->item.value); // 깊은 복사된 value 메모리 해제
+            delete[] static_cast<char*>(temp->item.value);
         }
-        delete temp; // 노드 자체 메모리 해제
+        delete temp;
     }
-    delete queue; // 큐 구조체 메모리 해제
+    delete queue;
 }
 
-
 Reply enqueue(Queue* queue, Item item) {
- 
     std::lock_guard<std::mutex> lock(queue->mtx);
 
-    // 깊은 복사를 위해 새 메모리를 할당하고 데이터를 복사 [text snippet]
     Value newValue = new char[item.value_size];
     memcpy(newValue, item.value, item.value_size);
 
@@ -48,21 +45,19 @@ Reply enqueue(Queue* queue, Item item) {
     }
 
     if (curr && curr->item.key == item.key) {
-        delete[] static_cast<char*>(curr->item.value); 
-        curr->item.value = newValue; 
+        delete[] static_cast<char*>(curr->item.value);
+        curr->item.value = newValue;
         curr->item.value_size = item.value_size;
     }
-  
     else {
         Node* newNode = new Node{ {item.key, newValue, item.value_size}, curr };
         pred->next = newNode;
-       
         if (!newNode->next) {
             queue->tail = newNode;
         }
     }
 
-    return { true, {} }; // 성공적으로 작업을 마침
+    return { true, {} };
 }
 
 Reply dequeue(Queue* queue) {
@@ -71,19 +66,15 @@ Reply dequeue(Queue* queue) {
     Node* sentinel = queue->head;
     Node* nodeToRemove = sentinel->next;
 
-    // 큐가 비어있는 경우
     if (!nodeToRemove) {
         return { false, {} };
     }
 
-   
     sentinel->next = nodeToRemove->next;
-    
     if (!sentinel->next) {
         queue->tail = sentinel;
     }
 
-    // Reply 구조체에 반환할 아이템을 깊은 복사
     Item resultItem;
     resultItem.key = nodeToRemove->item.key;
     resultItem.value_size = nodeToRemove->item.value_size;
@@ -96,7 +87,6 @@ Reply dequeue(Queue* queue) {
     return { true, resultItem };
 }
 
-
 Queue* range(Queue* queue, Key start, Key end) {
     Queue* resultQueue = init();
 
@@ -107,7 +97,7 @@ Queue* range(Queue* queue, Key start, Key end) {
         curr = curr->next;
     }
 
-    while (curr && curr->item.key < end) {
+    while (curr && curr->item.key <= end) {  // end 포함으로 보강
         enqueue(resultQueue, curr->item);
         curr = curr->next;
     }
