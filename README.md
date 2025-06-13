@@ -1,7 +1,6 @@
 416 , 김채연, 
 
 진행 상황:
-- 필수 요구사항 전체 구현 완료
 - thread-safe priority queue 구현 (std::mutex 사용)
 - enqueue: 동일 key 입력시 value 덮어쓰기 (update 로직 구현)
 - dequeue: 정상 동작, 반환 아이템 deep copy 적용
