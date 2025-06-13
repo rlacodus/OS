@@ -1,13 +1,10 @@
-416 , 김채연, 
+416 , 김채연
 
-진행 상황:
-- thread-safe priority queue 구현 (std::mutex 사용)
-- enqueue: 동일 key 입력시 value 덮어쓰기 (update 로직 구현)
-- dequeue: 정상 동작, 반환 아이템 deep copy 적용
-- range: start <= key <= end 범위 정상 반환 (포함 조건 적용)
-- 깊은 복사 (deep copy) 모든 삽입/반환에 적용
-- 메모리 해제 정상 (release 함수 구현 완료)
-- nalloc, nfree, nclone: 호출되지 않아 최소 구현으로 정의함
-- 제공된 테스트 코드 정상 통과 (스레드 동작 및 데이터 유실 없음)
-
-까지 한 것 같습니다 ,, ! 
+진행상황:
+- 기본 스레드 안전성 확보
+- **주요 기능 구현**:
+    - `init`, `release`: Sentinel 노드를 사용하는 큐의 생성 및 소멸 기능을 구현
+    - `enqueue`: Key 순서에 맞는 위치에 노드를 삽입하고, 중복된 Key에 대해서는 값을 덮어쓰는(update) 기능을 구현
+    - `dequeue`: 가장 우선순위가 높은(가장 작은 Key를 가진) 노드를 제거하고 반환하는 기능을 구현
+    - `range`: 특정 범위의 아이템을 포함하는 새로운 큐를 반환하는 기본 기능을 구현
+- **메모리 관리**: `enqueue`와 `dequeue` 시 `Item`에 대한 깊은 복사(Deep Copy)를 수행하여 메모리 누수나 중복 해제 문제가 없도록 구현
